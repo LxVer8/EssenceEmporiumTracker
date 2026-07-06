@@ -1,0 +1,33 @@
+name: Update Chroma Data
+
+on:
+  schedule:
+    # Runs every day at 06:00 UTC (adjust as needed)
+    - cron: '0 6 * * *'
+  workflow_dispatch:   # lets you run it manually from the Actions tab
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write    # needed to push changes back to the repo
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r scripts/requirements.txt
+
+      - name: Run scraper
+        run: python scripts/fetch_chromas.py
+
+      - name: Commit and push if changed
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Update chroma data (automated)"
+          file_pattern: data/chromas.json
